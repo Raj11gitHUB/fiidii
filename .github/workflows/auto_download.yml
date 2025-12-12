@@ -1,0 +1,41 @@
+name: Auto Download NSE Data
+
+on:
+  schedule:
+    - cron: "0 3 * * *"   # Runs every day at 8:30 AM IST (3:00 UTC)
+  workflow_dispatch:       # Allow manual run
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write       # Allows auto-commit
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install requests pandas openpyxl xlrd
+
+      - name: Run download script
+        run: |
+          python download.py
+
+      - name: Configure git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Commit and push changes
+        run: |
+          git add .
+          git commit -m "Auto-update NSE data" || echo "No changes to commit"
+          git push
