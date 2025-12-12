@@ -5,16 +5,10 @@ import pandas as pd
 from zipfile import ZipFile
 from io import BytesIO
 
-# -----------------------------
-# Helper: generate date range
-# -----------------------------
 def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days) + 1):
         yield start_date + timedelta(n)
 
-# -----------------------------
-# NSE Download Class
-# -----------------------------
 class Download:
     def __init__(self):
         self.header = {
@@ -25,9 +19,6 @@ class Download:
         self.session = requests.Session()
         self.session.headers.update(self.header)
 
-    # -----------------------------
-    # Bhav Copy
-    # -----------------------------
     def bhav_copy(self, start_date, end_date, download_path):
         os.makedirs(download_path, exist_ok=True)
         for i in daterange(start_date, end_date):
@@ -36,7 +27,6 @@ class Download:
             c2 = i.strftime("%d%b%Y").upper()
             file_name = f"fo{c2}bhav.csv.zip"
             url = f"{url_prefix}{c1}/{file_name}"
-
             print("Downloading:", url)
             resp = self.session.get(url, allow_redirects=True)
             if resp.status_code == 200:
@@ -46,9 +36,6 @@ class Download:
             else:
                 print("Failed:", resp.status_code)
 
-    # -----------------------------
-    # NSE OI
-    # -----------------------------
     def nse_oi(self, start_date, end_date, download_path):
         os.makedirs(download_path, exist_ok=True)
         for i in daterange(start_date, end_date):
@@ -56,7 +43,6 @@ class Download:
             c = i.strftime("%d%m%Y")
             file_name = f"nseoi_{c}.zip"
             url = url_prefix + file_name
-
             print("Downloading:", url)
             resp = self.session.get(url)
             if resp.status_code == 200:
@@ -66,38 +52,30 @@ class Download:
             else:
                 print("Failed:", resp.status_code)
 
-    # -----------------------------
-    # Client OI
-    # -----------------------------
     def client_oi(self, start_date, end_date, download_path, copy_path):
         os.makedirs(download_path, exist_ok=True)
         os.makedirs(copy_path, exist_ok=True)
         files = ["fao_participant_oi_", "fao_participant_vol_"]
         categories = ["Client", "FII", "DII", "Pro"]
-
         for url_suffix in files:
             for i in daterange(start_date, end_date):
                 c = i.strftime("%d%m%Y")
                 file_name = f"{url_suffix}{c}.csv"
                 url = f"https://archives.nseindia.com/content/nsccl/{file_name}"
-
                 print("Downloading:", url)
                 resp = self.session.get(url)
                 if resp.status_code != 200:
                     print("Failed:", resp.status_code)
                     continue
-
                 file_path = os.path.join(download_path, file_name)
                 with open(file_path, "wb") as f:
                     f.write(resp.content)
-
                 try:
                     df = pd.read_csv(file_path, header=None)
                     df["Date"] = i.strftime("%d-%m-%Y")
                 except:
                     print("Invalid CSV:", file_name)
                     continue
-
                 for cat in categories:
                     part = df[df[0] == cat]
                     if not part.empty:
@@ -105,9 +83,6 @@ class Download:
                         out_path = os.path.join(copy_path, out_file)
                         part.to_csv(out_path, mode="a", index=False, header=False)
 
-    # -----------------------------
-    # FII Stats
-    # -----------------------------
     def stats(self, start_date, end_date, download_path, copy_path):
         os.makedirs(download_path, exist_ok=True)
         os.makedirs(copy_path, exist_ok=True)
@@ -116,29 +91,24 @@ class Download:
             "INDEX OPTIONS", "NIFTY OPTIONS", "BANKNIFTY OPTIONS",
             "STOCK FUTURES"
         ]
-
         for i in daterange(start_date, end_date):
             c = i.strftime("%d-%b-%Y")
             file_name = f"fii_stats_{c}.xls"
             url = f"https://archives.nseindia.com/content/fo/{file_name}"
-
             print("Downloading:", url)
             resp = self.session.get(url)
             if resp.status_code != 200:
                 print("Failed:", resp.status_code)
                 continue
-
             file_path = os.path.join(download_path, file_name)
             with open(file_path, "wb") as f:
                 f.write(resp.content)
-
             try:
                 df = pd.read_excel(file_path, header=None)
                 df["Date"] = i.strftime("%d-%m-%Y")
             except:
                 print("Invalid XLS:", file_name)
                 continue
-
             for cat in categories:
                 part = df[df[0] == cat]
                 if not part.empty:
@@ -146,16 +116,12 @@ class Download:
                     out_path = os.path.join(copy_path, out_file)
                     part.to_csv(out_path, mode="a", index=False, header=False)
 
-# -----------------------------
-# Run download
-# -----------------------------
+# Run script
 if __name__ == "__main__":
     d = Download()
     dow_path = "./fiidata"
     start_date = date(2025, 12, 9)
     end_date = date(2025, 12, 10)
-
-    # Run all downloads
     d.bhav_copy(start_date, end_date, dow_path)
     d.nse_oi(start_date, end_date, dow_path)
     d.client_oi(start_date, end_date, dow_path, dow_path)
