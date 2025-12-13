@@ -1,7 +1,7 @@
 name: NSE Auto Download
 on:
   schedule:
-    - cron: "30 6 * * *"   # 11:50 AM IST
+    - cron: "40 6 * * *"   # 11:50 AM IST
   workflow_dispatch:
 
 
