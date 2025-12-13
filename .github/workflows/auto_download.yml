@@ -1,7 +1,8 @@
 name: NSE Auto Download
-
 on:
-  workflow_dispatch:  # Allows manual run for testing
+  schedule:
+    - cron: "30 13 * * *"   # 7:00 PM IST
+  workflow_dispatch:
 
 jobs:
   download:
@@ -23,3 +24,5 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
