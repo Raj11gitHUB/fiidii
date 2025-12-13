@@ -120,8 +120,8 @@ class Download:
 if __name__ == "__main__":
     d = Download()
     dow_path = "./fiidata"
-    start_date = date(2025, 12, 9)
-    end_date = date(2025, 12, 10)
+    start_date = date(2025, 12, 1)
+    end_date = date(2025, 12,5)
     d.bhav_copy(start_date, end_date, dow_path)
     d.nse_oi(start_date, end_date, dow_path)
     d.client_oi(start_date, end_date, dow_path, dow_path)
